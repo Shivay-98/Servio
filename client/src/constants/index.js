@@ -1,0 +1,90 @@
+export const APPLICATION_STATUSES = [
+  { value: 'draft', label: 'Draft', color: 'gray' },
+  { value: 'pending', label: 'Pending Review', color: 'yellow' },
+  { value: 'under_review', label: 'Under Review', color: 'blue' },
+  { value: 'approved', label: 'Approved', color: 'green' },
+  { value: 'rejected', label: 'Rejected', color: 'red' },
+  { value: 'suspended', label: 'Suspended', color: 'orange' },
+];
+
+export const DOCUMENT_TYPES = [
+  { value: 'aadhaar', label: 'Aadhaar Card', required: true },
+  { value: 'pan', label: 'PAN Card', required: true },
+  { value: 'address_proof', label: 'Address Proof', required: true },
+  { value: 'qualification', label: 'Qualification Certificate', required: true },
+  { value: 'experience', label: 'Experience Certificate', required: false },
+  { value: 'photo', label: 'Passport Size Photo', required: true },
+  { value: 'other', label: 'Other Document', required: false },
+];
+
+export const GENDER_OPTIONS = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+];
+
+export const LANGUAGE_OPTIONS = [
+  { value: 'english', label: 'English' },
+  { value: 'hindi', label: 'Hindi' },
+  { value: 'bengali', label: 'Bengali' },
+  { value: 'telugu', label: 'Telugu' },
+  { value: 'marathi', label: 'Marathi' },
+  { value: 'tamil', label: 'Tamil' },
+  { value: 'gujarati', label: 'Gujarati' },
+  { value: 'urdu', label: 'Urdu' },
+  { value: 'kannada', label: 'Kannada' },
+  { value: 'odia', label: 'Odia' },
+  { value: 'malayalam', label: 'Malayalam' },
+  { value: 'punjabi', label: 'Punjabi' },
+  { value: 'assamese', label: 'Assamese' },
+];
+
+export const DAY_OPTIONS = [
+  { value: 'monday', label: 'Monday' },
+  { value: 'tuesday', label: 'Tuesday' },
+  { value: 'wednesday', label: 'Wednesday' },
+  { value: 'thursday', label: 'Thursday' },
+  { value: 'friday', label: 'Friday' },
+  { value: 'saturday', label: 'Saturday' },
+  { value: 'sunday', label: 'Sunday' },
+];
+
+export const INDIAN_STATES = [
+  { value: 'andhra_pradesh', label: 'Andhra Pradesh' },
+  { value: 'arunachal_pradesh', label: 'Arunachal Pradesh' },
+  { value: 'assam', label: 'Assam' },
+  { value: 'bihar', label: 'Bihar' },
+  { value: 'chhattisgarh', label: 'Chhattisgarh' },
+  { value: 'goa', label: 'Goa' },
+  { value: 'gujarat', label: 'Gujarat' },
+  { value: 'haryana', label: 'Haryana' },
+  { value: 'himachal_pradesh', label: 'Himachal Pradesh' },
+  { value: 'jharkhand', label: 'Jharkhand' },
+  { value: 'karnataka', label: 'Karnataka' },
+  { value: 'kerala', label: 'Kerala' },
+  { value: 'madhya_pradesh', label: 'Madhya Pradesh' },
+  { value: 'maharashtra', label: 'Maharashtra' },
+  { value: 'manipur', label: 'Manipur' },
+  { value: 'meghalaya', label: 'Meghalaya' },
+  { value: 'mizoram', label: 'Mizoram' },
+  { value: 'nagaland', label: 'Nagaland' },
+  { value: 'odisha', label: 'Odisha' },
+  { value: 'punjab', label: 'Punjab' },
+  { value: 'rajasthan', label: 'Rajasthan' },
+  { value: 'sikkim', label: 'Sikkim' },
+  { value: 'tamil_nadu', label: 'Tamil Nadu' },
+  { value: 'telangana', label: 'Telangana' },
+  { value: 'tripura', label: 'Tripura' },
+  { value: 'uttar_pradesh', label: 'Uttar Pradesh' },
+  { value: 'uttarakhand', label: 'Uttarakhand' },
+  { value: 'west_bengal', label: 'West Bengal' },
+  { value: 'andaman_nicobar', label: 'Andaman and Nicobar Islands' },
+  { value: 'chandigarh', label: 'Chandigarh' },
+  { value: 'dadra_nagar_haveli', label: 'Dadra and Nagar Haveli and Daman and Diu' },
+  { value: 'delhi', label: 'Delhi' },
+  { value: 'jammu_kashmir', label: 'Jammu and Kashmir' },
+  { value: 'ladakh', label: 'Ladakh' },
+  { value: 'lakshadweep', label: 'Lakshadweep' },
+  { value: 'puducherry', label: 'Puducherry' },
+];
