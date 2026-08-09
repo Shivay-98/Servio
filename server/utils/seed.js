@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const User = require('../models/User');
 const Category = require('../models/Category');
 const ProviderProfile = require('../models/ProviderProfile');
+const User = require('../models/User');
+const seedAdmin = require('./seedAdmin');
 
 const connectDB = require('../config/db');
 
@@ -36,20 +36,19 @@ const seed = async () => {
     const createdCategories = await Category.insertMany(categories);
     console.log(`${createdCategories.length} categories seeded`);
 
-    const admin = await User.create({
-      firstName: 'Admin',
-      lastName: 'User',
-      email: 'admin@servio.com',
-      password: 'Admin@123',
-      role: 'admin',
-      isEmailVerified: true,
-    });
-    console.log(`Admin user created: ${admin.email}`);
+    const adminResult = await seedAdmin();
+    if (adminResult.created) {
+      console.log(`Admin user created: ${adminResult.email}`);
+    } else {
+      console.log(`Admin already exists: ${adminResult.email}`);
+    }
 
     console.log('Seed completed successfully');
+    await mongoose.disconnect();
     process.exit(0);
   } catch (error) {
-    console.error('Seed failed:', error);
+    console.error('Seed failed:', error.message);
+    await mongoose.disconnect();
     process.exit(1);
   }
 };

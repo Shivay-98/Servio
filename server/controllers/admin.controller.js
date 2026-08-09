@@ -8,6 +8,7 @@ const AppError = require('../utils/AppError');
 const sendResponse = require('../utils/sendResponse');
 const ApiFeatures = require('../utils/ApiFeatures');
 const NotificationService = require('../services/notification.service');
+const seedAdmin = require('../utils/seedAdmin');
 
 exports.getDashboardStats = asyncHandler(async (req, res) => {
   const [
@@ -373,4 +374,24 @@ exports.getAnalytics = asyncHandler(async (req, res) => {
     topCities,
     statusBreakdown,
   });
+});
+
+exports.seedAdminUser = asyncHandler(async (req, res, next) => {
+  try {
+    const seedResult = await seedAdmin();
+
+    if (!seedResult.created) {
+      return sendResponse(res, 409, 'Admin already exists');
+    }
+
+    return sendResponse(res, 201, 'Admin seeded successfully');
+  } catch (error) {
+    if (error.code === 'MISSING_ADMIN_CREDENTIALS') {
+      console.error('Admin seed failed: ADMIN_EMAIL or ADMIN_PASSWORD is missing');
+      return next(new AppError('Admin seed is not configured', 500));
+    }
+
+    console.error(`Admin seed failed: ${error.message}`);
+    return next(new AppError('Failed to seed admin', 500));
+  }
 });
