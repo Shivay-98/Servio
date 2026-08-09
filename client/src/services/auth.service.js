@@ -1,6 +1,6 @@
 import api from './api';
 
-const AUTH_URL = `${import.meta.env.VITE_API_URL}/auth`;
+const AUTH_URL = '/auth';
 
 export const register = async (data) => {
   const response = await api.post(`${AUTH_URL}/register`, data);
@@ -23,7 +23,7 @@ export const getMe = async () => {
 };
 
 export const refreshToken = async () => {
-  const response = await api.post(`${AUTH_URL}/refresh`);
+  const response = await api.post(`${AUTH_URL}/refresh-token`);
   return response.data;
 };
 

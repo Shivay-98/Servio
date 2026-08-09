@@ -17,7 +17,7 @@ const sendTokenResponse = async (user, statusCode, res, rememberMe = false) => {
     expires: new Date(Date.now() + cookieExpireDays * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: config.env === 'production',
-    sameSite: 'lax',
+    sameSite: config.env === 'production' ? 'none' : 'lax',
   };
 
   user.refreshToken = refreshToken;

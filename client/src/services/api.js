@@ -82,7 +82,7 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes('/auth/refresh')
+      !originalRequest.url?.includes('/auth/refresh-token')
     ) {
       if (isRefreshing) {
         // Another refresh is already in flight -- queue this request
@@ -110,9 +110,11 @@ api.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post('/api/v1/auth/refresh', {
-          refreshToken: currentRefreshToken,
-        });
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
+          { refreshToken: currentRefreshToken },
+          { withCredentials: true }
+        );
 
         const { accessToken, refreshToken, user } = data.data || data;
 
