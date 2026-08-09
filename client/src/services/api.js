@@ -3,10 +3,11 @@ import store from '../redux/store';
 import { setCredentials, logout } from '../redux/slices/authSlice';
 
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // ---------------------------------------------------------------------------

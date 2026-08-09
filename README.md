@@ -41,7 +41,7 @@ cp server/.env.example server/.env
 
 ```bash
 cd server
-node -e "require('./utils/seed.js')()"
+node ./utils/seed.js
 ```
 
 Seeds 12 service categories and an admin user:
