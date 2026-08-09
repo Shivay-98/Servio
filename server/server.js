@@ -15,6 +15,7 @@ const authRoutes = require('./routes/auth.routes');
 const providerRoutes = require('./routes/provider.routes');
 const documentRoutes = require('./routes/document.routes');
 const adminRoutes = require('./routes/admin.routes');
+const adminSeedRoutes = require('./routes/adminSeed.routes');
 const categoryRoutes = require('./routes/category.routes');
 const notificationRoutes = require('./routes/notification.routes');
 
@@ -51,6 +52,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/provider', providerRoutes);
 app.use('/api/v1/documents', documentRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/admin', adminSeedRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 
