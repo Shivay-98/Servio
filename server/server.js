@@ -20,6 +20,10 @@ const notificationRoutes = require('./routes/notification.routes');
 
 const app = express();
 
+if (config.env === 'production') {
+  app.set('trust proxy', 1);
+}
+
 connectDB();
 
 app.use(helmet());
