@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const ProviderProfile = require('../models/ProviderProfile');
 const asyncHandler = require('../utils/asyncHandler');
@@ -6,6 +7,8 @@ const AppError = require('../utils/AppError');
 const sendResponse = require('../utils/sendResponse');
 const sendEmail = require('../utils/sendEmail');
 const config = require('../config');
+
+const googleClient = new OAuth2Client(config.google.clientId);
 
 const sendTokenResponse = async (user, statusCode, res, rememberMe = false) => {
   const accessToken = user.getSignedJwtToken();
@@ -66,29 +69,30 @@ exports.register = asyncHandler(async (req, res, next) => {
 
   const verificationUrl = `${config.clientUrl}/verify-email/${verificationToken}`;
 
-  try {
-    await sendEmail({
-      to: user.email,
-      subject: 'Verify your email - Servio',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #6366f1;">Welcome to Servio!</h2>
-          <p>Hi ${user.firstName},</p>
-          <p>Please verify your email address by clicking the button below:</p>
-          <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background: #6366f1; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0;">
-            Verify Email
-          </a>
-          <p>If the button doesn't work, copy and paste this link into your browser:</p>
-          <p>${verificationUrl}</p>
-          <p>This link will expire in 24 hours.</p>
-        </div>
-      `,
-    });
-  } catch (error) {
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpire = undefined;
-    await user.save({ validateBeforeSave: false });
-  }
+  // Fire-and-forget: send email in background so user gets instant response
+  sendEmail({
+    to: user.email,
+    subject: 'Verify your email - Servio',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #6366f1;">Welcome to Servio!</h2>
+        <p>Hi ${user.firstName},</p>
+        <p>Please verify your email address by clicking the button below:</p>
+        <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background: #6366f1; color: white; text-decoration: none; border-radius: 8px; margin: 16px 0;">
+          Verify Email
+        </a>
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p>${verificationUrl}</p>
+        <p>This link will expire in 24 hours.</p>
+      </div>
+    `,
+  }).catch((error) => {
+    console.error('Failed to send verification email:', error.message);
+    // Clean up verification token in background
+    User.findByIdAndUpdate(user._id, {
+      $unset: { emailVerificationToken: 1, emailVerificationExpire: 1 },
+    }).catch(() => {});
+  });
 
   await sendTokenResponse(user, 201, res);
 });
@@ -110,6 +114,69 @@ exports.login = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   await sendTokenResponse(user, 200, res, rememberMe);
+});
+
+exports.googleLogin = asyncHandler(async (req, res, next) => {
+  const { credential } = req.validatedBody;
+
+  let ticket;
+  try {
+    ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: config.google.clientId,
+    });
+  } catch (err) {
+    return next(new AppError('Invalid Google credential token', 400));
+  }
+
+  const payload = ticket.getPayload();
+  const { sub: googleId, email, given_name: firstName, family_name: lastName, email_verified } = payload;
+
+  if (!email) {
+    return next(new AppError('Google account does not have an email address', 400));
+  }
+
+  let user = await User.findOne({ googleId });
+
+  if (!user) {
+    // If not found by googleId, check if a user with the same email exists
+    user = await User.findOne({ email });
+
+    if (user) {
+      // Link Google account to existing user profile
+      user.googleId = googleId;
+      user.authProvider = 'google';
+      if (email_verified) {
+        user.isEmailVerified = true;
+      }
+      await user.save({ validateBeforeSave: false });
+    } else {
+      // Create new user (defaulting role to 'provider')
+      user = await User.create({
+        firstName: firstName || 'Google',
+        lastName: lastName || 'User',
+        email,
+        googleId,
+        authProvider: 'google',
+        role: 'provider',
+        isEmailVerified: !!email_verified,
+      });
+
+      // Create associated ProviderProfile
+      if (user.role === 'provider') {
+        await ProviderProfile.create({ user: user._id });
+      }
+    }
+  }
+
+  if (!user.isActive) {
+    return next(new AppError('Account has been deactivated', 401));
+  }
+
+  user.lastLogin = new Date();
+  await user.save({ validateBeforeSave: false });
+
+  await sendTokenResponse(user, 200, res);
 });
 
 exports.logout = asyncHandler(async (req, res) => {

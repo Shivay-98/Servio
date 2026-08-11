@@ -28,7 +28,9 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: [function () {
+        return !this.googleId;
+      }, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters'],
       select: false,
     },
@@ -36,6 +38,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['provider', 'admin', 'superadmin', 'moderator'],
       default: 'provider',
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
     },
     avatar: {
       url: String,
@@ -75,8 +87,9 @@ userSchema.virtual('fullName').get(function () {
 });
 
 userSchema.pre('save', async function (next) {
+  if (!this.password) return next();
   if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(12);
+  const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
@@ -117,7 +130,6 @@ userSchema.methods.getResetPasswordToken = function () {
   return token;
 };
 
-userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
 module.exports = mongoose.model('User', userSchema);
