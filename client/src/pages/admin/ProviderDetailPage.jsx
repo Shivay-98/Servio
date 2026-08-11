@@ -89,19 +89,20 @@ export default function ProviderDetailPage() {
     );
   }
 
-  if (isError || !provider?.data) {
+  const p = provider?.data?.profile || provider?.data;
+  const user = p?.user;
+
+  if (isError || !provider?.data || !p || !user) {
     return (
       <EmptyState
         icon={AlertCircle}
         title="Provider not found"
-        description="Could not load provider details."
+        description="Could not load provider details, or this provider profile is orphaned."
         action={<Button onClick={() => navigate('/admin/providers')}>Back to Providers</Button>}
       />
     );
   }
 
-  const p = provider.data.profile || provider.data;
-  const user = p.user || {};
   const docs = provider.data.documents || p.documents || [];
 
   const statusBadge = (status) => {

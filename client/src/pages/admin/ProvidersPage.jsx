@@ -48,7 +48,7 @@ export default function ProvidersPage() {
     keepPreviousData: true,
   });
 
-  const providers = data?.data || [];
+  const providers = (data?.data || []).filter((p) => p.user !== null && p.user !== undefined);
   const pagination = data?.pagination || {};
 
   const statusBadge = (status) => {

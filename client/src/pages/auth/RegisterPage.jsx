@@ -13,7 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { setCredentials } from '../../redux/slices/authSlice';
-import { register as registerUser } from '../../services/auth.service';
+import { register as registerUser, googleLogin } from '../../services/auth.service';
+import { GoogleLogin } from '@react-oauth/google';
 
 const registerSchema = z
   .object({
@@ -90,6 +91,35 @@ export default function RegisterPage() {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setIsLoading(true);
+      const response = await googleLogin(credentialResponse.credential);
+
+      const { user, accessToken, refreshToken } = response.data || response;
+
+      dispatch(
+        setCredentials({
+          user,
+          accessToken,
+          refreshToken,
+        })
+      );
+
+      toast.success('Welcome back!');
+
+      if (user.role === 'admin' || user.role === 'superadmin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Google authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -225,6 +255,29 @@ export default function RegisterPage() {
                   )}
                 </Button>
               </form>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => {
+                    toast.error('Google Sign In failed');
+                  }}
+                  theme="outline"
+                  shape="rectangular"
+                  width="100%"
+                />
+              </div>
 
               <div className="mt-6 text-center text-sm text-muted-foreground">
                 Already have an account?{' '}

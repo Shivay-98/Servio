@@ -30,6 +30,9 @@ module.exports = {
     fromName: process.env.FROM_NAME || 'Servio',
   },
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+  },
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 900000,
     max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 100,

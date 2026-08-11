@@ -42,9 +42,14 @@ const resetPasswordSchema = z.object({
     ),
 });
 
+const googleLoginSchema = z.object({
+  credential: z.string().min(1, 'Google credential token is required'),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  googleLoginSchema,
 };

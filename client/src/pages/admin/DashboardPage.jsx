@@ -72,7 +72,7 @@ export default function DashboardPage() {
   const analytics = analyticsData?.data || {};
 
   const stats = dashboard.stats || {};
-  const recentProviders = dashboard.recentProviders || [];
+  const recentProviders = (dashboard.recentProviders || []).filter((p) => p.user !== null && p.user !== undefined);
   const monthlyRegistrations = analytics.monthlyRegistrations || [];
   const statusDistribution = analytics.statusDistribution || [];
   const topCities = analytics.topCities || [];

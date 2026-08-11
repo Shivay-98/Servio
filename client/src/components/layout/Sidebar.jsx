@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -28,13 +29,33 @@ const iconMap = {
 export default function Sidebar({ items = [], open, onClose, isAdmin = false }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const prevPathname = useRef(location.pathname);
+
+  useEffect(() => {
+    if (location.pathname !== prevPathname.current) {
+      prevPathname.current = location.pathname;
+      if (open && onClose) {
+        onClose();
+      }
+    }
+  }, [location.pathname, open, onClose]);
+
+  const handleNavClick = () => {
+    if (open && onClose) {
+      onClose();
+    }
+  };
 
   const handleLogout = () => {
+    if (open && onClose) {
+      onClose();
+    }
     dispatch(logout());
     navigate('/');
   };
 
-  const sidebarContent = (
+  const renderSidebarContent = () => (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
@@ -62,7 +83,7 @@ export default function Sidebar({ items = [], open, onClose, isAdmin = false }) 
                 key={item.path}
                 to={item.path}
                 end={item.path === '/dashboard' || item.path === '/admin'}
-                onClick={onClose}
+                onClick={handleNavClick}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                     isActive
@@ -98,7 +119,7 @@ export default function Sidebar({ items = [], open, onClose, isAdmin = false }) 
     <>
       {/* Desktop sidebar */}
       <aside className="hidden w-64 flex-shrink-0 border-r border-border bg-card lg:block">
-        {sidebarContent}
+        {renderSidebarContent()}
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -119,7 +140,7 @@ export default function Sidebar({ items = [], open, onClose, isAdmin = false }) 
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed inset-y-0 left-0 z-50 w-64 bg-card shadow-xl lg:hidden"
             >
-              {sidebarContent}
+              {renderSidebarContent()}
             </motion.aside>
           </>
         )}

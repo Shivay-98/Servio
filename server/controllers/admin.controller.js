@@ -9,7 +9,58 @@ const sendResponse = require('../utils/sendResponse');
 const ApiFeatures = require('../utils/ApiFeatures');
 const NotificationService = require('../services/notification.service');
 
+// Helper function to prune orphaned provider profiles (whose user doesn't exist anymore)
+const pruneOrphanedProviders = async () => {
+  try {
+    const orphanedProfiles = await ProviderProfile.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userData',
+        },
+      },
+      {
+        $match: {
+          userData: { $size: 0 },
+        },
+      },
+    ]);
+
+    if (orphanedProfiles.length === 0) return;
+
+    const orphanedIds = orphanedProfiles.map((p) => p._id);
+    const orphanedUserIds = orphanedProfiles.map((p) => p.user);
+
+    // Find and delete documents
+    const docRecords = await Document.find({ provider: { $in: orphanedIds } });
+    const publicIds = docRecords.map((doc) => doc.publicId).filter(Boolean);
+
+    if (publicIds.length > 0) {
+      try {
+        const CloudinaryService = require('../services/cloudinary.service');
+        await CloudinaryService.deleteMultiple(publicIds);
+      } catch (e) {
+        console.error('Failed to delete documents from Cloudinary:', e.message);
+      }
+    }
+
+    // Delete database records
+    await Document.deleteMany({ provider: { $in: orphanedIds } });
+    await Notification.deleteMany({ user: { $in: orphanedUserIds } });
+    await ProviderProfile.deleteMany({ _id: { $in: orphanedIds } });
+
+    console.log(`Successfully pruned ${orphanedIds.length} orphaned provider profiles and associated data.`);
+  } catch (error) {
+    console.error('Error pruning orphaned provider profiles:', error);
+  }
+};
+
+exports.pruneOrphanedProviders = pruneOrphanedProviders;
+
 exports.getDashboardStats = asyncHandler(async (req, res) => {
+  await pruneOrphanedProviders();
   const [
     totalProviders,
     pendingApplications,
@@ -109,6 +160,7 @@ exports.getDashboardStats = asyncHandler(async (req, res) => {
 });
 
 exports.getAllProviders = asyncHandler(async (req, res) => {
+  await pruneOrphanedProviders();
   const { search, applicationStatus, city, category, sort, page, limit } =
     req.query;
 
@@ -301,6 +353,7 @@ exports.deleteProvider = asyncHandler(async (req, res, next) => {
 });
 
 exports.getAnalytics = asyncHandler(async (req, res) => {
+  await pruneOrphanedProviders();
   const [
     total,
     pending,

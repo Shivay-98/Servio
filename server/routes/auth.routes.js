@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   register,
   login,
+  googleLogin,
   logout,
   getMe,
   refreshToken,
@@ -16,12 +17,14 @@ const validate = require('../middlewares/validate');
 const {
   registerSchema,
   loginSchema,
+  googleLoginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } = require('../validators/auth.validator');
 
 router.post('/register', validate(registerSchema), register);
 router.post('/login', validate(loginSchema), login);
+router.post('/google', validate(googleLoginSchema), googleLogin);
 router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.post('/refresh-token', refreshToken);
